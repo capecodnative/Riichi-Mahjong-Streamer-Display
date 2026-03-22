@@ -23,6 +23,9 @@ const leftFrameWidth =
 
 const rightFrameLeft = UI.outerPad + leftFrameWidth + UI.outerPad;
 
+const [overlayHeights, setOverlayHeights] = useState({});
+const imgRefs = useRef({});
+
 const styles = {
   app: {
     width: "1500px",
@@ -69,7 +72,7 @@ const styles = {
     justifyContent: "start",
     marginBottom: "18px",
   },
-    clearButton: {
+  clearButton: {
     width: "100%",
     height: "40px",
     borderRadius: "10px",
@@ -159,10 +162,37 @@ export default function App() {
   }
 
   useLayoutEffect(() => {
-    selected.forEach((yaku) => measureOverlay(yaku.id));
+    const nextHeights = {};
+
+    selected.forEach((yaku) => {
+      const img = imgRefs.current[yaku.id];
+      if (img) {
+        const h = img.getBoundingClientRect().height;
+        if (h > 0) nextHeights[yaku.id] = h;
+      }
+    });
+
+    setOverlayHeights((prev) => {
+      const prevKeys = Object.keys(prev);
+      const nextKeys = Object.keys(nextHeights);
+      if (
+        prevKeys.length === nextKeys.length &&
+        nextKeys.every((k) => prev[k] === nextHeights[k])
+      ) {
+        return prev;
+      }
+      return nextHeights;
+    });
   }, [selected]);
 
+  const overlayGap = 6;
   let runningTop = 0;
+
+  const overlayPositions = selected.map((yaku) => {
+    const top = runningTop;
+    runningTop += (overlayHeights[yaku.id] ?? 0) + overlayGap;
+    return { ...yaku, top };
+  });
 
   return (
     <div style={styles.app}>
@@ -201,27 +231,31 @@ export default function App() {
 
       <div style={styles.rightFrame}>
         <div style={styles.captureArea}>
-          {selected.map((yaku) => {
-            const top = runningTop;
-            const thisHeight = overlayHeights[yaku.id] ?? 0;
-            runningTop += thisHeight + UI.overlayGap;
-
-            return (
-              <img
-                key={yaku.id}
-                src={`${import.meta.env.BASE_URL}overlays/${yaku.overlay}`}
-                alt=""
-                style={{
-                  position: "absolute",
-                  left: "0px",
-                  top: `${top}px`,
-                  width: "942px",
-                  height: "auto",
-                  display: "block",
-                }}
-              />
-            );
-          })}
+          {overlayPositions.map((yaku) => (
+            <img
+              key={yaku.id}
+              ref={(el) => {
+                imgRefs.current[yaku.id] = el;
+              }}
+              src={`${import.meta.env.BASE_URL}overlays/${yaku.overlay}`}
+              alt=""
+              onLoad={() => {
+                const img = imgRefs.current[yaku.id];
+                if (!img) return;
+                const h = img.getBoundingClientRect().height;
+                if (!h) return;
+                setOverlayHeights((prev) => ({ ...prev, [yaku.id]: h }));
+              }}
+              style={{
+                position: "absolute",
+                left: "0px",
+                top: `${yaku.top}px`,
+                width: "942px",
+                height: "auto",
+                display: "block",
+              }}
+            />
+          ))}
         </div>
       </div>
     </div>
