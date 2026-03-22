@@ -182,12 +182,11 @@ export default function App() {
     });
   }, [selected]);
 
-  const overlayGap = 6;
   let runningTop = 0;
 
   const overlayPositions = selected.map((yaku) => {
     const top = runningTop;
-    runningTop += (overlayHeights[yaku.id] ?? 0) + overlayGap;
+    runningTop += (overlayHeights[yaku.id] ?? 0) + UI.overlayGap;
     return { ...yaku, top };
   });
 
