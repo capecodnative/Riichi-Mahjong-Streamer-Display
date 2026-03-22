@@ -23,9 +23,6 @@ const leftFrameWidth =
 
 const rightFrameLeft = UI.outerPad + leftFrameWidth + UI.outerPad;
 
-const [overlayHeights, setOverlayHeights] = useState({});
-const imgRefs = useRef({});
-
 const styles = {
   app: {
     width: "1500px",
