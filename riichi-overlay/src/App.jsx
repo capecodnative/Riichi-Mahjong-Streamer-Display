@@ -209,12 +209,8 @@ export default function App() {
             return (
               <img
                 key={yaku.id}
-                ref={(el) => {
-                  imgRefs.current[yaku.id] = el;
-                }}
-                src={`/overlays/${yaku.overlay}`}
+                src={`${import.meta.env.BASE_URL}overlays/${yaku.overlay}`}
                 alt=""
-                onLoad={() => measureOverlay(yaku.id)}
                 style={{
                   position: "absolute",
                   left: "0px",
